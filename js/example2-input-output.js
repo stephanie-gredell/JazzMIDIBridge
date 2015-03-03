@@ -11,52 +11,66 @@
  *  - MIDIDeviceSelector.js
  */
 
-window.addEventListener('load', function() {
+window.addEventListener('load', function () {
 
-    "use strict";
+  "use strict";
 
-    var input = null,
-        output = null,
-        selectInput = document.getElementById("inputs"),
-        selectOutput = document.getElementById("outputs"),
-        midiMessages = document.getElementById("messages");
-    
-    
-    function connectDevices(MIDIAccess){
-        if(input){
-            input.addEventListener("midimessage",function(msg){
-                if(output){
-                    output.sendMIDIMessage(msg);
-                }
-                midiMessages.innerHTML += msg.toString() + "<br/>";
-                midiMessages.scrollTop = midiMessages.scrollHeight;
-            });
+  var input = null,
+      output = null,
+      selectInput = document.getElementById("inputs"),
+      selectOutput = document.getElementById("outputs"),
+      midiMessages = document.getElementById("messages");
+
+
+  function connectDevices(MIDIAccess) {
+    if (input) {
+      input.addEventListener("midimessage", function (msg) {
+        if (output) {
+          output.sendMIDIMessage(msg);
         }
+        midiMessages.innerHTML += msg.toString() + "<br/>";
+        midiMessages.scrollTop = midiMessages.scrollHeight;
+      });
     }
+  }
 
-    JMB.init(function(MIDIAccess){
-        
-        var inputs = MIDIAccess.enumerateInputs(),
-            outputs = MIDIAccess.enumerateOutputs();       
- 
-        //create dropdown menu for MIDI inputs
-        JMB.createMIDIDeviceSelector(selectInput,inputs,"input",function(deviceId){
-            if(input){
-                input.close();
-            }
-            input = MIDIAccess.getInput(deviceId);
-            connectDevices(MIDIAccess);        
-        });
+  JMB.init(function (MIDIAccess) {
 
-        //create dropdown menu for MIDI outputs
-        JMB.createMIDIDeviceSelector(selectOutput,outputs,"ouput",function(deviceId){
-            if(output){
-                output.close();
-            }
-            output = MIDIAccess.getOutput(deviceId);
-            connectDevices(MIDIAccess);        
-        });
-           
-    });
+    var inputs = MIDIAccess.enumerateInputs(),
+        outputs = MIDIAccess.enumerateOutputs(),
+        inputCallback = function (deviceId) {
+          if (input) {
+            input.close();
+          }
+          input = MIDIAccess.getInput(deviceId);
+          connectDevices(MIDIAccess);
+        },
+        outputCallback = function (deviceId) {
+          if (output) {
+            output.close();
+          }
+          output = MIDIAccess.getOutput(deviceId);
+          connectDevices(MIDIAccess);
+        },
+        inputOptions = {
+          select: selectInput,
+          devices: inputs,
+          type: "input",
+          callback: inputCallback
+        },
+        outputOptions = {
+          select: selectOutput,
+          devices: outputs,
+          type: "output",
+          callback: outputCallback
+        };
+
+    //create dropdown menu for MIDI inputs
+    JMB.createMIDIDeviceSelector(inputOptions);
+
+    //create dropdown menu for MIDI outputs
+    JMB.createMIDIDeviceSelector(outputOptions);
+
+  });
 
 }, false);
